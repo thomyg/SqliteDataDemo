@@ -1,0 +1,73 @@
+﻿@page "/"
+@using Meziantou.AspNetCore.Components
+@using SqliteDataDemo.Data
+
+@inject MyDbService service
+
+<div>
+    <h3>Welcome!</h3>
+</div>
+
+<div class="container">
+@*
+    <CarGrid 
+                 CarList="@Cars" 
+                 OnCarDeleteClick="@DeleteCar" 
+                 OnCarSelectClick="@SetCarForUpdate">
+    </CarGrid>
+
+    <div class="row m-5">
+        <div class="col-5 bg-light m-2 justify-content-start">
+            <div class="p-3 mb-3 bg-primary text-white text-center">Add New Product</div>
+            <CarForm car="@NewCar" OnBtnSubmitClick="@AddNewCar"></CarForm>
+        </div>
+
+        <div class="col-5 bg-light m-2 justify-content-end">
+            <div class="p-3 mb-1 bg-primary text-white text-center">Update Product</div>
+            <CarForm car="@UpdateCar" OnBtnSubmitClick="@UpdateCarData"></CarForm>          
+        </div>
+    </div>*@
+</div>
+
+@code {
+
+    public Car NewCar { get; set; } = new Car();
+    Car UpdateCar = new Car();
+    List<Car> Cars = new List<Car>();
+    //Mes
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshCars();
+    }
+
+    private async Task RefreshCars()
+    {
+        Cars = await service.GetCarsAsync();
+    }
+
+    
+    private async Task AddNewCar(CarEventArgs args)
+    {
+        await service.AddCarAsync(args.Car);
+        NewCar = new Car();
+        await RefreshCars();
+    }
+
+    
+    private void SetCarForUpdate(CarEventArgs args)
+    {
+        UpdateCar = args.Car;
+    }
+
+    private async Task UpdateCarData(CarEventArgs args)
+    {
+        await service.UpdateCarAsync(args.Car);
+        await RefreshCars();
+    }
+
+    private async Task DeleteCar(CarEventArgs args)
+    {
+        await service.DeleteCarAsync(args.Car);
+        await RefreshCars();
+    } 
+}
