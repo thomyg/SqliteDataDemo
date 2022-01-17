@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Text;
 
 namespace SqliteDataDemoGenerator
 {
@@ -78,7 +78,8 @@ namespace SqliteDataDemoGenerator
                                 File.WriteAllText(Path.Combine(razorFolder, $"{dataClassName}Form.razor"), sourceFormComponent);
 
                                 var dataClassProperties = GetPropertiesOfDataObject(syntaxTrees.First(x => x.FilePath.Contains(dataClassName+".cs")));
-
+                                var sourceGridComponent = GetGridComponent(dataClassName, dataClassProperties);
+                                File.WriteAllText(Path.Combine(razorFolder, $"{dataClassName}Grid.razor"), sourceGridComponent);
                             }
                         }
                     }
@@ -327,9 +328,83 @@ namespace  SqliteDataDemo.Data
         
         string GetGridComponent(string dataClassName, List<string> properties)
         {
-            var sourceCode = $@"";
+            string Name = dataClassName;
+            string NameLower = dataClassName.ToLower();
+            StringBuilder source = new StringBuilder();
 
-            return sourceCode;
+            var sourceCodeFirstPart = $@"
+@using SqliteDataDemo.Data
+
+<div class=""row bg-light"">
+    <table class=""table table-bordered"">
+        <thead class=""thead-dark"">
+            <tr>";
+
+            source.Append(sourceCodeFirstPart);
+            foreach(string p in properties)
+            {
+                source.Append($@"<th>{p}</th>");
+            }
+
+            var sourceCodeSecondPart = $@"<th>Delete {Name}</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if ({Name}List.Any())
+            {{
+                @foreach (var {NameLower} in {Name}List)
+                {{
+                    <tr @onclick=""(() => Set{Name}ForUpdate({NameLower}))"">";
+
+            source.Append(sourceCodeSecondPart);
+            foreach (string p in properties)
+            {
+                source.Append($@"<td>@{NameLower}.{p}</td>");
+            }               
+            var sourceCodeLastPart = $@"
+                        <td><button class=""btn btn-danger"" @onclick=""(() => Delete{Name}({NameLower}))"">Delete</button></td>
+                    </tr>
+                }}
+            }}
+            else
+            {{
+                <tr><td colspan=""6""><strong>No products available</strong></td></tr>
+            }}
+        </tbody>
+    </table>
+</div>
+
+@code {{
+
+    [Parameter]
+    [EditorRequired]
+    public List<{Name}> {Name}List {{ get; set; }}
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<{Name}EventArgs> On{Name}SelectClick {{ get; set; }} 
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<{Name}EventArgs> On{Name}DeleteClick {{ get; set; }}
+
+
+    private void Set{Name}ForUpdate({Name} {NameLower})
+    {{
+        On{Name}SelectClick.InvokeAsync(new {Name}EventArgs({NameLower}));
+    }}
+
+    private void Delete{Name}({Name} {NameLower})
+    {{
+        On{Name}DeleteClick.InvokeAsync(new {Name}EventArgs({NameLower}));
+    }}
+
+
+}}
+
+";
+            source.Append(sourceCodeLastPart);
+            return source.ToString();
         }
     }
 }
