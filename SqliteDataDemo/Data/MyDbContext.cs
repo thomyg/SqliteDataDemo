@@ -7,8 +7,12 @@ namespace SqliteDataDemo.Data
         
 
         [GenerateUI]
-        public DbSet<Car> Cars { get; set; }        
+        public DbSet<Car> Cars { get; set; }
+        [GenerateUI]
         public DbSet<Ship> Ships { get; set; }
+
+        [GenerateUI]
+        public DbSet<Airplane> Airplanes { get; set; }
 
         public MyDbContext(DbContextOptions options) : base(options)
         {
