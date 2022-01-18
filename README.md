@@ -16,6 +16,7 @@ Source generator should create the following:
 - a custom EventArgs class for the UI
 - razor pages for the page, grid and form component
 - razor component for the nav menu + css
+- razor and css files will be written to a custom folder, cs classes will not be visible as VS Studio manages them
 
 # DISCLAIMER - DO NOT USE THIS IN PRODUCTION
 
